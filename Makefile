@@ -1,4 +1,4 @@
-# Copyright 2015 The Prometheus Authors
+# Copyright 2018 The Prometheus Authors
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,8 +12,37 @@
 # limitations under the License.
 
 # Needs to be defined before including Makefile.common to auto-generate targets
-DOCKER_ARCHS ?= amd64 armv7 arm64
+DOCKER_ARCHS      ?= amd64 arm64
+DOCKER_REPO       ?= ghcr.io/appscode-images
+DOCKER_IMAGE_NAME ?= memcached_exporter
+DOCKER_IMAGE_TAG  ?= $(shell git describe --exact-match --abbrev=0 2>/dev/null || git rev-parse --abbrev-ref HEAD)
 
 include Makefile.common
 
-DOCKER_IMAGE_NAME ?= memcached-exporter
+.PHONY: tarball
+tarball: common-tarball
+
+.PHONY: docker
+docker: common-docker
+
+.PHONY: docker-publish
+docker-publish: common-docker-publish
+
+.PHONY: docker-manifest
+docker-manifest: common-docker-manifest
+
+.PHONY: build
+build: common-build
+
+.PHONY: crossbuild
+crossbuild: promu
+	@echo ">> building cross-platform binaries"
+	@$(PROMU) crossbuild
+
+.PHONY: tarballs
+tarballs: crossbuild
+	@echo ">> building release tarballs"
+	@$(PROMU) tarballs
+
+.PHONY: release
+release: crossbuild docker docker-publish docker-manifest
