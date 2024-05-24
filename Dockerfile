@@ -7,6 +7,6 @@ ARG ARCH="amd64"
 ARG OS="linux"
 COPY .build/${OS}-${ARCH}/memcached_exporter /bin/memcached_exporter
 
-USER       nobody
+USER       65534
 ENTRYPOINT ["/bin/memcached_exporter"]
 EXPOSE     9150
